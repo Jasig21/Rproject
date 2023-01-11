@@ -1,12 +1,32 @@
+library('sf')
+library('mapsf')
+
+##getwd()
+##setwd("/Users/geographie/Documents/R/geomatique_cartographie/Rproject")
+
 ################################################################################
 # Importer les couches d’information et les cartographier (4 points)
 ################################################################################ 
 
+#Vérification du contenu du geopackage
+st_layers("data/dvf.gpkg")
+
+com <- st_read("data/dvf.gpkg", layer="com")
+route <- st_read("data/dvf.gpkg", layer="route")
+rail <- st_read("data/dvf.gpkg", layer="rail")
+parc <- st_read("data/dvf.gpkg", layer="parc")
+dvf <- st_read("data/dvf.gpkg", layer="dvf")
 
 
+head(com)
+head(route)
+head(rail)
+head(parc)
+head(dvf)
 
-
-
+#Le modèle cartographique sera composé des couches com, route, rail et parc
+#L'information statistique est présente dans la couche dvf qui représente les 
+#demandes de valeurs foncières géolocalisées
 
 ################################################################################
 # Carte des prix de l’immobilier (4 points)
