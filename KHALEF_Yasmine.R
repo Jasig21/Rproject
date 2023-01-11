@@ -1,5 +1,11 @@
+###MAILS 
+timothee.giraud@cnrs.fr
+hugues.pecout@cnrs.fr
+
 library('sf')
 library('mapsf')
+#install.packages('maptiles')
+library(maptiles)
 
 ##getwd()
 ##setwd("/Users/geographie/Documents/R/geomatique_cartographie/Rproject")
@@ -27,6 +33,79 @@ head(dvf)
 #Le modèle cartographique sera composé des couches com, route, rail et parc
 #L'information statistique est présente dans la couche dvf qui représente les 
 #demandes de valeurs foncières géolocalisées
+
+#Fond de carte
+custom <- list(
+  name = "custom",
+  bg = "black",
+  fg = "#b6bf0a",
+  mar = c(2, 2, 2, 2),
+  tab = TRUE,
+  pos = "center",
+  inner = TRUE,
+  line = 2,
+  cex = 1.5,
+  font = 3
+)
+mf_theme(custom)
+
+mf_init(x = com, expandBB = c(0,0,0,0))
+
+plot(st_geometry(route), col="#616161", lwd=0.5, border = "red", add = TRUE)
+plot(st_geometry(rail), col="#616161", lwd=2, add = TRUE)
+plot(st_geometry(parc), col="#3482125e", lwd=1, add = TRUE)
+plot(st_geometry(com), col=NA, lwd=2, border = "white", add = TRUE)
+
+mf_map(
+	x = dvf, 
+  	var = "prix",
+	col = "#ec5b4b",
+	cex = 0.1,
+	add = TRUE
+)
+
+
+
+# Titre
+mf_title(
+  	txt = "Les ventes d'appartements à Vincennes et Montrueil (2016 - 2021)", 
+  	pos = "right", 
+  	tab = TRUE, 
+  	bg = "grey", 
+  	fg = "black", 
+  	cex = 1, 
+  	line = 1.2, 
+  	font = 1, 
+  	inner = TRUE
+)
+
+
+#Flèche du Nord
+mf_arrow(pos = "topleft", col = "grey")
+
+#Echelle
+mf_scale(
+	size = 500,
+	pos = "bottomright", 
+	lwd = 1.5, 
+	cex = 0.6, 
+	col = "grey", 
+	unit = "m"
+)
+
+#Credits
+mf_credits(
+  txt = "Auteur : KHALEF Yasmine, 2023\nBD CARTO, IGN, 2021\n© les contributeurs d'OpenStreetMap, 2021\nDemandes de valeurs foncières géolocalisées, Etalab, 2021",
+  col = "grey",
+)
+
+
+###TODO
+##style du tutre
+##Etiquettes commune
+##export
+##couleur des routes
+
 
 ################################################################################
 # Carte des prix de l’immobilier (4 points)
