@@ -245,13 +245,6 @@ length(inter)
 
 # Compter le nombre de transaction dans chaque carreau, voir chapitre 3.7.7 
 # dans https://rcarto.github.io/geomatique_avec_r/
-inter <- st_intersects(grid, dep_46, sparse = FALSE)
-grid <- grid[inter, ]
-restaurant <- st_read("data/lot46.gpkg", layer = "restaurant", quiet = TRUE)
-plot(st_geometry(grid), col = "grey", border = "white")
-plot(st_geometry(restaurant), pch = 20, col = "red", add = TRUE, cex = .2)
-inter <- st_intersects(grid, restaurant, sparse = TRUE)
-length(inter)
 
 grid$nb_transaction <- sapply(X = inter, FUN = length)
 plot(grid["nb_transaction"])
@@ -265,6 +258,7 @@ plot(grid["nb_transaction"])
 inter <- st_intersection(dvf, com)
 inter
 
+inter$PrixMed <- median(inter$prix)
 resultat <- aggregate(x = list(pop_from_grid = inter$Ind), 
                       by = list(INSEE_COM = inter$INSEE_COM), 
                       FUN = "sum")
