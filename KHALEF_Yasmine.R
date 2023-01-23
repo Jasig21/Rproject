@@ -202,10 +202,14 @@ mf_credits(
 montreuil <- st_as_sf(data.frame(x =2.4410, y = 48.8624), coords = c("x", "y"), crs = 4326)
 
 mf_init(x = montreuil, expandBB = c(0.1,0,0.1,0))
-plot(st_geometry(montreuil), col="#454545", lwd=2, add = TRUE)
+plot(st_geometry(route), col="#454545", lwd=0.5, border = "red", add = TRUE)
+plot(st_geometry(rail), col="#454545", lwd=2, add = TRUE)
 
-montreuil_b <- st_buffer(x = montreuil, dist = 500)
+
+montreuil_b <- st_buffer(x = montreuil, dist = 5000)
 plot(st_geometry(montreuil_b), col = "lightblue", lwd=2, border = "red", add = TRUE)
+
+plot(montreuil, col="red", lwd=2, cex = 2, add = TRUE)
 
 
 
@@ -223,14 +227,25 @@ cat(paste0("Le prix de l'immobilier dans un voisinnage de 500 mètres ",
 ################################################################################ 
 
 # Créer une grille régulière avec st_make_grid()
+grid <- st_make_grid(x = com, cellsize = 250)
 
 # Transformer la grille en objet sf avec st_sf()
-
 # Ajouter un identifiant unique, voir chapitre 3.7.6
-# dans https://rcarto.github.io/geomatique_avec_r/
+grid <- st_sf(ID = 1:length(grid), geom = grid)
+
+plot(st_geometry(grid), col = "grey", border = "white")
+plot(st_geometry(com), border = "grey50", add = TRUE)
+
 
 # Compter le nombre de transaction dans chaque carreau, voir chapitre 3.7.7 
 # dans https://rcarto.github.io/geomatique_avec_r/
+inter <- st_intersects(grid, dep_46, sparse = FALSE)
+grid <- grid[inter, ]
+restaurant <- st_read("data/lot46.gpkg", layer = "restaurant", quiet = TRUE)
+plot(st_geometry(grid), col = "grey", border = "white")
+plot(st_geometry(restaurant), pch = 20, col = "red", add = TRUE, cex = .2)
+inter <- st_intersects(grid, restaurant, sparse = TRUE)
+length(inter)
 
 # Calculez le prix median par carreau, voir chapitre 3.7.8
 # dans https://rcarto.github.io/geomatique_avec_r/
