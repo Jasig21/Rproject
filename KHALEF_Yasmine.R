@@ -202,10 +202,14 @@ mf_credits(
 montreuil <- st_as_sf(data.frame(x =2.4410, y = 48.8624), coords = c("x", "y"), crs = 4326)
 
 mf_init(x = montreuil, expandBB = c(0.1,0,0.1,0))
-plot(st_geometry(montreuil), col="#454545", lwd=2, add = TRUE)
+plot(st_geometry(route), col="#454545", lwd=0.5, border = "red", add = TRUE)
+plot(st_geometry(rail), col="#454545", lwd=2, add = TRUE)
 
-montreuil_b <- st_buffer(x = montreuil, dist = 500)
+
+montreuil_b <- st_buffer(x = montreuil, dist = 5000)
 plot(st_geometry(montreuil_b), col = "lightblue", lwd=2, border = "red", add = TRUE)
+
+plot(montreuil, col="red", lwd=2, cex = 2, add = TRUE)
 
 
 
@@ -223,18 +227,47 @@ cat(paste0("Le prix de l'immobilier dans un voisinnage de 500 mètres ",
 ################################################################################ 
 
 # Créer une grille régulière avec st_make_grid()
+mont_vin <- st_union(com)
+grid <- st_make_grid(x = mont_vin, cellsize = 250)
 
 # Transformer la grille en objet sf avec st_sf()
-
 # Ajouter un identifiant unique, voir chapitre 3.7.6
-# dans https://rcarto.github.io/geomatique_avec_r/
+grid <- st_sf(ID = 1:length(grid), geom = grid)
+
+inter <- st_intersects(grid, mont_vin, sparse = FALSE)
+grid <- grid[inter, ]
+
+transaction <- st_read("data/dvf.gpkg", layer = "dvf", quiet = TRUE)
+plot(st_geometry(grid), col = "grey", border = "white")
+plot(st_geometry(transaction), pch = 20, col = "red", add = TRUE, cex = .2)
+inter <- st_intersects(grid, transaction, sparse = TRUE)
+length(inter)
 
 # Compter le nombre de transaction dans chaque carreau, voir chapitre 3.7.7 
 # dans https://rcarto.github.io/geomatique_avec_r/
 
+grid$nb_transaction <- sapply(X = inter, FUN = length)
+plot(grid["nb_transaction"])
+
+
 # Calculez le prix median par carreau, voir chapitre 3.7.8
 # dans https://rcarto.github.io/geomatique_avec_r/
 # st_intersection(), aggregate(), merge()
+
+# intersection
+inter <- st_intersection(dvf, com)
+inter
+
+resultat <- aggregate(x = list(pop_from_grid = inter$Ind), 
+                      by = list(INSEE_COM = inter$INSEE_COM), 
+                      FUN = "sum")
+head(resultat)
+
+
+
+
+
+
 
 # Selectionner les carreaux ayant plus de 10 transactions, voir chapitre 3.5
 # dans https://rcarto.github.io/geomatique_avec_r/
