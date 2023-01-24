@@ -240,14 +240,18 @@ grid <- grid[inter, ]
 transaction <- st_read("data/dvf.gpkg", layer = "dvf", quiet = TRUE)
 plot(st_geometry(grid), col = "grey", border = "white")
 plot(st_geometry(transaction), pch = 20, col = "red", add = TRUE, cex = .2)
-inter <- st_intersects(grid, transaction, sparse = TRUE)
-length(inter)
+
 
 # Compter le nombre de transaction dans chaque carreau, voir chapitre 3.7.7 
 # dans https://rcarto.github.io/geomatique_avec_r/
 
+inter <- st_intersects(grid, transaction, sparse = TRUE)
+length(inter)
+
 grid$nb_transaction <- sapply(X = inter, FUN = length)
 plot(grid["nb_transaction"])
+
+length(grid$nb_transaction)
 
 
 # Calculez le prix median par carreau, voir chapitre 3.7.8
@@ -255,24 +259,30 @@ plot(grid["nb_transaction"])
 # st_intersection(), aggregate(), merge()
 
 # intersection
-inter <- st_intersection(dvf, com)
+inter <- st_intersection(dvf, grid)
 inter
 
+
 inter$PrixMed <- median(inter$prix)
-resultat <- aggregate(x = list(pop_from_grid = inter$Ind), 
-                      by = list(INSEE_COM = inter$INSEE_COM), 
+
+
+
+###POURQUOI? #####
+resultat <- aggregate(x = list(prix_from_grid = inter$prix), 
+                      by = list(carreau = inter$nb_transaction), 
                       FUN = "sum")
-head(resultat)
+resultat
 
 
-
-
+com_res <- merge(com, resultat, by = "INSEE_COM", all.x = TRUE)
+com_res
 
 
 
 # Selectionner les carreaux ayant plus de 10 transactions, voir chapitre 3.5
 # dans https://rcarto.github.io/geomatique_avec_r/
 
+com[com$NOM_COM == "Gramat", ]
 
 # Justification de la discrétisation (statistiques, boxplot, histogramme, 
 # beeswarm...)
