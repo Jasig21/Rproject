@@ -1,13 +1,11 @@
-###MAILS 
-timothee.giraud@cnrs.fr
-hugues.pecout@cnrs.fr
+################################################################################
+# Librairies requises
+################################################################################ 
+setwd("C:/Users/geographie/Documents/R/geomatique_cartographie/Rproject")
 
 library('sf')
 library('mapsf')
-#install.packages('maptiles')
-library(maptiles)
 
-setwd("/Users/geographie/Documents/R/geomatique_cartographie/Rproject")
 
 ################################################################################
 # Importer les couches d’information et les cartographier (4 points)
@@ -16,106 +14,45 @@ setwd("/Users/geographie/Documents/R/geomatique_cartographie/Rproject")
 #Vérification du contenu du geopackage
 st_layers("data/dvf.gpkg")
 
+#Import des couches
 com <- st_read("data/dvf.gpkg", layer="com")
 route <- st_read("data/dvf.gpkg", layer="route")
 rail <- st_read("data/dvf.gpkg", layer="rail")
 parc <- st_read("data/dvf.gpkg", layer="parc")
 dvf <- st_read("data/dvf.gpkg", layer="dvf")
 
-
-head(com)
-head(route)
-head(rail)
-head(parc)
-head(dvf)
-
 #Le modèle cartographique sera composé des couches com, route, rail et parc
 #L'information statistique est présente dans la couche dvf qui représente les 
 #demandes de valeurs foncières géolocalisées
 
-#Préparation de l'export
-mf_export(com, "carte1.png", 
-          width = 800,
-	    height = 900,
-	    expandBB = rep(0, 0)
+
+##### Préparation de l'export ##############
+
+mf_export(x = com, 
+          filename = "carte1.png", 
+          theme = "darkula",
+          width = 800, 
+          expandBB = c(0,0,.01,0))
+
+mf_map(parc, col = "grey7", border = "grey7", add = TRUE)
+mf_map(route, lwd = .2, col = "#b5b3b5", add = TRUE)
+mf_map(rail, lwd = .2, col = "#b5b3b5", lty = 2, add = TRUE)
+mf_map(dvf, col = "tomato", pch = 20, cex = .1, add = TRUE)
+mf_map(com, col = NA, border = "white", add = T, lwd = 1.2)
+
+mf_label(com, var = 'NOM', halo = TRUE)
+mf_title("Les ventes d'appartements à Vincennes et à Montreuil (2016 - 2021)")
+mf_scale(500, unit = "m")
+mf_arrow()
+
+credits <- paste0(
+  "Auteur : KHALEF Yasmine\n",
+  "BD CARTO®, IGN, 2021\n",
+  "© les contributeurs d’OpenStreetMap, 2021\n", 
+  "Demandes de valeurs foncières géolocalisées, Etalab, 2021"
 )
-
-
-#Theme personnalisé
-custom <- list(
-  name = "custom",
-  bg = "black",
-  fg = "white",
-  tab = TRUE,
-  pos = "center",
-  inner = TRUE,
-  line = 2,
-  cex = 1.5,
-  font = 3
-)
-mf_theme(custom)
-
-mf_init(x = com, expandBB = c(0,0,0,0))
-
-plot(st_geometry(route), col="#454545", lwd=0.5, border = "red", add = TRUE)
-plot(st_geometry(rail), col="#454545", lwd=2, add = TRUE)
-plot(st_geometry(parc), col="#3482125e", lwd=1, add = TRUE)
-plot(st_geometry(com), col=NA, lwd=2, border = "white", add = TRUE)
-
-mf_map(
-	x = dvf, 
-  	var = "prix",
-	col = "#ec5b4b",
-	cex = 0.1,
-	add = TRUE
-)
-
-# Titre
-mf_title(
-  	txt = "Les ventes d'appartements à Vincennes et Montreuil (2016 - 2021)", 
-  	pos = "right", 
-  	tab = TRUE, 
-  	bg = "#b8c3d9", 
-  	fg = "black", 
-  	cex = 1, 
-  	line = 1.2, 
-  	font = 4, 
-  	inner = TRUE
-)
-
-#Flèche du Nord
-mf_arrow(pos = "topleft", col = "#b8c3d9")
-
-#Echelle
-mf_scale(
-	size = 500,
-	pos = "bottomright", 
-	lwd = 1.5, 
-	cex = 0.6, 
-	col = "#b8c3d9", 
-	unit = "m"
-)
-
-#Credits
-mf_credits(
-  txt = "Auteur : KHALEF Yasmine, 2023\nBD CARTO, IGN, 2021\n© les contributeurs d'OpenStreetMap, 2021\nDemandes de valeurs foncières géolocalisées, Etalab, 2021",
-  col = "#b8c3d9",
-)
-
-#Labels
-mf_label(
-  x = com,
-  var = "NOM",
-  col= "white",
-  halo = TRUE,
-  overlap = FALSE, 
-  lines = FALSE
-)
-
+mf_credits(credits)
 dev.off()
-
-###TODO
-##export
 
 
 ################################################################################
@@ -130,35 +67,39 @@ summary(prix) #la moyenne et la médianne sont proches
 hist(prix) #la distribution est sous forme de courbe de Gauss 
 boxplot(prix) #Il n'y a pas de valeurs abérrantes
 
-##La distribution étant normale, on opte pour une discrétisation à amplitude
-#égale afin d'avoir la possibilité de choisir facilement le nombre de classes 
+##La distribution étant normale, on opte pour une discrétisation à effectifs 
+#égaux afin d'avoir la possibilité de choisir facilement le nombre de classes 
 #qu'on souhaite représenter  
 
-mf_init(x = com, expandBB = c(0.1,0,0.1,0))
-mf_theme(custom)
-
-plot(st_geometry(route), col="#454545", lwd=0.5, border = "red", add = TRUE)
-plot(st_geometry(rail), col="#454545", lwd=2, add = TRUE)
-plot(st_geometry(com), col=NA, lwd=2, border = "white", add = TRUE)
-
-d <- mf_get_breaks(dvf$prix, breaks = "msd", central = FALSE)
+breaks <- mf_get_breaks(dvf$prix, breaks = "msd", central = FALSE)
 
 mypal <- mf_get_pal(n = c(2,4), palette = c("Teal", "SunsetDark"), rev = c(FALSE, FALSE))
 
-mf_map(
-  x = dvf,
-  var = "prix",
-  type = "choro",
-  breaks = d,
-  pal = mypal,
-  cex = 0.2,
-  lwd = 0,
-  leg_pos = "bottomright",
-  leg_title = "Prix au mètre carré (€)", 
-  add = TRUE
-)
+#Export de la carte
+mf_export(x = com, 
+          filename = "carte2.png", 
+          theme = "darkula", 
+          width = 800,
+          expandBB = c(0,0,.01,0))
+mf_map(parc, col = "grey7", border = "grey7", add = TRUE)
+mf_map(route, lwd = .2, col ="#b5b3b5", add = TRUE)
+mf_map(rail, lwd = .2, col ="#b5b3b5", lty = 2, add = TRUE)
 
-# Titre
+# carte choroplethe
+mf_map(x = dvf, 
+       var = "prix", 
+       type = "choro", 
+       breaks = breaks, 
+       pal = mypal, 
+       cex = .6, 
+       pch = 20,
+       leg_title = "Prix au mètre carré (€)",
+       leg_pos = "bottomright2", 
+       leg_frame = TRUE,
+       leg_val_rnd = -2,
+       add = TRUE)
+mf_map(com, col = NA, border = "white", add = TRUE)
+
 mf_title(
   	txt = "Prix des appartements à Vincennes et à Montreuil (2016 - 2021)", 
   	pos = "right", 
@@ -170,7 +111,6 @@ mf_title(
   	font = 4, 
   	inner = TRUE
 )
-
 #Flèche du Nord
 mf_arrow(pos = "topleft", col = "#b8c3d9")
 
@@ -185,41 +125,36 @@ mf_scale(
 )
 
 #Credits
-mf_credits(
-  txt = "Auteur : KHALEF Yasmine, 2023\nBD CARTO, IGN, 2021\n© les contributeurs d'OpenStreetMap, 2021\nDemandes de valeurs foncières géolocalisées, Etalab, 2021",
-  col = "#b8c3d9",
-)
-
-
-
+mf_credits(credits)
+dev.off()
 
 
 ################################################################################ 
 # Prix de l’immobilier dans le voisinnage de la Mairie de Montreuil (4 points)
 ################################################################################ 
 
+# creation d'une couche sf pour la mairie de Montreuil
+montreuil <- st_as_sf(data.frame(x =2.4410, y = 48.8624), 
+			    coords = c("x", "y"), 
+                      crs = 4326)
 
-montreuil <- st_as_sf(data.frame(x =2.4410, y = 48.8624), coords = c("x", "y"), crs = 4326)
+#Reprojection 
+montreuil <- st_transform(montreuil, st_crs(dvf))
 
-mf_init(x = montreuil, expandBB = c(0.1,0,0.1,0))
-plot(st_geometry(route), col="#454545", lwd=0.5, border = "red", add = TRUE)
-plot(st_geometry(rail), col="#454545", lwd=2, add = TRUE)
-
-
+#Buffer de 500m
 montreuil_b <- st_buffer(x = montreuil, dist = 5000)
-plot(st_geometry(montreuil_b), col = "lightblue", lwd=2, border = "red", add = TRUE)
 
-plot(montreuil, col="red", lwd=2, cex = 2, add = TRUE)
+#Intersection entre les appartements et le buffer
+inter <- st_intersection(dvf, montreuil_b)
 
+#Médiane des prix des appartements
+value <- median(inter$prix)
 
-
+#Résultat
 cat(paste0("Le prix de l'immobilier dans un voisinnage de 500 mètres ",
            "autour de la mairie de Montreuil est de ", 
            round(value, 0), 
            " euros par m²"))
-
-
-
 
 
 ################################################################################ 
@@ -227,71 +162,93 @@ cat(paste0("Le prix de l'immobilier dans un voisinnage de 500 mètres ",
 ################################################################################ 
 
 # Créer une grille régulière avec st_make_grid()
-mont_vin <- st_union(com)
-grid <- st_make_grid(x = mont_vin, cellsize = 250)
+grid <- st_make_grid(com, cellsize = 250, square = TRUE)
 
 # Transformer la grille en objet sf avec st_sf()
-# Ajouter un identifiant unique, voir chapitre 3.7.6
-grid <- st_sf(ID = 1:length(grid), geom = grid)
+grid <- st_sf(geometry = grid)
 
-inter <- st_intersects(grid, mont_vin, sparse = FALSE)
-grid <- grid[inter, ]
+# Ajouter un identifiant unique
+grid$id_grid <- 1:nrow(grid)
 
-transaction <- st_read("data/dvf.gpkg", layer = "dvf", quiet = TRUE)
-plot(st_geometry(grid), col = "grey", border = "white")
-plot(st_geometry(transaction), pch = 20, col = "red", add = TRUE, cex = .2)
+# Compter le nombre de transaction dans chaque carreau
+inter_grid_dvf <- st_intersects(grid, dvf, sparse = TRUE)
+grid$n_dvf <- sapply(inter_grid_dvf, length)
 
+# Calculez le prix median par carreau
+dvf_grid <- st_intersection(dvf, grid)
 
-# Compter le nombre de transaction dans chaque carreau, voir chapitre 3.7.7 
-# dans https://rcarto.github.io/geomatique_avec_r/
+dvf_agg <- aggregate(x = list(prixMed = dvf_grid$prix),
+                     by = list(id_grid = dvf_grid$id_grid), 
+                     FUN = median)
 
-inter <- st_intersects(grid, transaction, sparse = TRUE)
-length(inter)
+# Joindre le résultat à la grille
+grid <- merge(x = grid, y = dvf_agg, by = "id_grid", all.x = TRUE)
 
-grid$nb_transaction <- sapply(X = inter, FUN = length)
-plot(grid["nb_transaction"])
+# Selectionner les carreaux ayant plus de 10 transactions
+grid <- grid[grid$n_dvf>10, ]
 
-length(grid$nb_transaction)
+# Découpage de la grille en fonction des communes (optionel)
+grid <- st_intersection(grid, st_union(com))
 
+# Justification de la discrétisation 
+hist(grid$prixMed)
+boxplot(grid$prixMed)
+summary(grid$prixMed)
 
-# Calculez le prix median par carreau, voir chapitre 3.7.8
-# dans https://rcarto.github.io/geomatique_avec_r/
-# st_intersection(), aggregate(), merge()
+#La distribution est normale. On va donc employer une discrétisation 
+#basée sur la moyenne et l'écart-type
 
-# intersection
-inter <- st_intersection(dvf, grid)
-inter
+#Export de la carte
+mf_export(x = com, 
+          filename = "carte4.png",
+          theme = "darkula", 
+          width = 800, 
+          expandBB = c(0,0,.01,0))
 
+mf_map(parc, col = "grey7", border = "grey7", add = TRUE)
 
-inter$PrixMed <- median(inter$prix)
+mf_map(x = grid, 
+       var = "prixMed", 
+       type = "choro",
+       border = NA,
+       leg_pos = NA,
+       breaks = "msd", 
+       pal = "Burg", 
+       add = TRUE)
 
+mf_map(route, lwd = .2, col ="#b5b3b5", add = TRUE )
+mf_map(rail, lwd = .2, col ="#b5b3b5", lty = 2, add = TRUE)
+mf_map(dvf, col = "#ffffff80", pch = ".", cex = .01, add = TRUE)
+mf_map(com, col = NA, border = "white", add = TRUE)
 
+mf_legend(type = "choro", 
+          pos = c(660918.1, 6861859 ), 
+          val = breaks,
+          title = "Prix au mètre carré médian (€)\npar carreaux de 250 mètres",
+          pal = "Burg", 
+          val_rnd = -2, 
+          frame = TRUE)
 
-###POURQUOI? #####
-resultat <- aggregate(x = list(prix_from_grid = inter$prix), 
-                      by = list(carreau = inter$nb_transaction), 
-                      FUN = "sum")
-resultat
+text(x = 660918.1, y = 6860750, 
+     labels = paste0("Ne sont représentés que les carreaux", "\n", 
+                     "contenant plus de 10 transactions."), 
+     col = "#A9B7C6", cex = .6, adj = c(0,1), font = 2)
 
+mf_title("Prix des appartements à Vincennes et à Montreuil (2016-2021)")
+#Flèche du Nord
+mf_arrow(pos = "topleft", col = "#b8c3d9")
 
-com_res <- merge(com, resultat, by = "INSEE_COM", all.x = TRUE)
-com_res
+#Echelle
+mf_scale(
+	size = 500,
+	pos = "bottomright", 
+	lwd = 1.5, 
+	cex = 0.6, 
+	col = "#b8c3d9", 
+	unit = "m"
+)
 
+#Credits
+mf_credits(credits)
 
-
-# Selectionner les carreaux ayant plus de 10 transactions, voir chapitre 3.5
-# dans https://rcarto.github.io/geomatique_avec_r/
-
-com[com$NOM_COM == "Gramat", ]
-
-# Justification de la discrétisation (statistiques, boxplot, histogramme, 
-# beeswarm...)
-
-
-
-
-
-
-
-
-
+dev.off()
