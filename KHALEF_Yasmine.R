@@ -34,10 +34,10 @@ mf_export(x = com,
           width = 800, 
           expandBB = c(0,0,.01,0))
 
-mf_map(parc, col = "grey7", border = "grey7", add = TRUE)
-mf_map(route, lwd = .2, col = "#b5b3b5", add = TRUE)
-mf_map(rail, lwd = .2, col = "#b5b3b5", lty = 2, add = TRUE)
-mf_map(dvf, col = "tomato", pch = 20, cex = .1, add = TRUE)
+mf_map(parc, col = "#157D3666", border = "#157D3666", add = TRUE)
+mf_map(route, lwd = .2, col = "#000005", add = TRUE)
+mf_map(rail, lwd = .2, col = "#000005", lty = 2, add = TRUE)
+mf_map(dvf, col = "#c20000", pch = 20, cex = .1, add = TRUE)
 mf_map(com, col = NA, border = "white", add = T, lwd = 1.2)
 
 mf_label(com, var = 'NOM', halo = TRUE)
@@ -81,9 +81,9 @@ mf_export(x = com,
           theme = "darkula", 
           width = 800,
           expandBB = c(0,0,.01,0))
-mf_map(parc, col = "grey7", border = "grey7", add = TRUE)
-mf_map(route, lwd = .2, col ="#b5b3b5", add = TRUE)
-mf_map(rail, lwd = .2, col ="#b5b3b5", lty = 2, add = TRUE)
+mf_map(parc, col = "#157D3666", border = "#157D3666", add = TRUE)
+mf_map(route, lwd = .2, col = "#000005", add = TRUE)
+mf_map(rail, lwd = .2, col = "#000005", lty = 2, add = TRUE)
 
 # carte choroplethe
 mf_map(x = dvf, 
@@ -200,12 +200,10 @@ summary(grid$prixMed)
 
 #Export de la carte
 mf_export(x = com, 
-          filename = "carte4.png",
+          filename = "carte3.png",
           theme = "darkula", 
           width = 800, 
           expandBB = c(0,0,.01,0))
-
-mf_map(parc, col = "grey7", border = "grey7", add = TRUE)
 
 mf_map(x = grid, 
        var = "prixMed", 
@@ -216,13 +214,13 @@ mf_map(x = grid,
        pal = "Burg", 
        add = TRUE)
 
-mf_map(route, lwd = .2, col ="#b5b3b5", add = TRUE )
-mf_map(rail, lwd = .2, col ="#b5b3b5", lty = 2, add = TRUE)
-mf_map(dvf, col = "#ffffff80", pch = ".", cex = .01, add = TRUE)
-mf_map(com, col = NA, border = "white", add = TRUE)
+mf_map(parc, col = "#157D3666", border = "#157D3666", add = TRUE)
+mf_map(route, lwd = .2, col = "#000005", add = TRUE)
+mf_map(rail, lwd = .2, col = "#000005", lty = 2, add = TRUE)
+mf_map(com, col = NA, border = "white", add = T, lwd = 1.2)
 
 mf_legend(type = "choro", 
-          pos = c(660918.1, 6861859 ), 
+          pos = c(660920, 6861859 ), 
           val = breaks,
           title = "Prix au mètre carré médian (€)\npar carreaux de 250 mètres",
           pal = "Burg", 
